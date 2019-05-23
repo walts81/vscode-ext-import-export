@@ -1,11 +1,11 @@
-import * as vscode from 'vscode';
+import { ExtensionContext } from 'vscode';
 import * as fs from 'fs-extra';
-import { Environment, pluginService } from './../services';
+import { Environment, pluginService, vscodeHelpers } from './../services';
 import { ExtensionInformation } from './../models';
 
-export default (context: vscode.ExtensionContext) => {
+export default (context: ExtensionContext) => {
   const env = new Environment(context);
-  vscode.window
+  vscodeHelpers
     .showOpenDialog({
       canSelectMany: false,
       filters: {
@@ -16,21 +16,23 @@ export default (context: vscode.ExtensionContext) => {
       return new Promise<any>((resolve, reject) => {
         fs.readFile(uris[0].path, 'utf8', (err, data) => {
           if (!!err) {
-            vscode.window.showErrorMessage('Could not read JSON file');
+            vscodeHelpers.showErrorMessage('Could not read JSON file');
             reject(err);
             return;
           }
-          vscode.window.showInformationMessage('Installing extensions...');
+          vscodeHelpers.showInformationMessage('Installing extensions...');
           const json: { plugins: ExtensionInformation[] } = JSON.parse(data);
           pluginService
-            .installExtensions(env.osType, json.plugins, vscode.window.showInformationMessage)
+            .installExtensions(env.osType, json.plugins, vscodeHelpers.showInformationMessage)
             .then(x => {
-              vscode.window.showInformationMessage('Finished installing extensions. Please reload VS Code.',
-                { modal: true }, 'Reload')
-                .then(answer => answer === 'Reload' ? vscode.commands.executeCommand('workbench.action.reloadWindow').then(() => resolve(x)) : resolve());
+              vscodeHelpers
+                .showInformationMessage('Finished installing extensions. Please reload VS Code.', 'Reload')
+                .then(answer =>
+                  answer === 'Reload' ? vscodeHelpers.reloadWindow().then(() => resolve(x)) : resolve()
+                );
             })
             .catch(err => {
-              vscode.window.showErrorMessage('There was a problem installing extensions').then(() => reject(err));
+              vscodeHelpers.showErrorMessage('There was a problem installing extensions').then(() => reject(err));
             });
         });
       });

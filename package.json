@@ -2,7 +2,7 @@
 	"name": "extension-import-export",
 	"displayName": "Extension Import/Export",
 	"description": "Save VS Code extensions to an export file. Install extensions from an exported file",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"publisher": "josh-walters",
 	"repository": "https://github.com/walts81/vscode-ext-import-export",
 	"engines": {

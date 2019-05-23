@@ -16,7 +16,7 @@ export class PluginService {
 
   getMissingExtensions(list: ExtensionInformation[]) {
     const hashset = {};
-    const localList = this.getInstalledExtensions();
+    const localList = this.getInstalledExtensions('Both');
     const missingList: ExtensionInformation[] = [];
     for (const ext of localList) {
       if (hashset[ext.name] == null) {
@@ -32,10 +32,18 @@ export class PluginService {
     return missingList;
   }
 
-  getInstalledExtensions() {
+  getInstalledExtensions(extType: 'Extensions' | 'Themes' | 'Both') {
     const list: ExtensionInformation[] = [];
     for (const ext of vscode.extensions.all) {
       if (ext.packageJSON.isBuiltin === true || ext.packageJSON.name === myExtName) {
+        continue;
+      }
+
+      if (extType === 'Extensions' && this.isTheme(ext)) {
+        continue;
+      }
+
+      if (extType === 'Themes' && !this.isTheme(ext)) {
         continue;
       }
 
@@ -63,8 +71,8 @@ export class PluginService {
     return list;
   }
 
-  async deleteExtensions(extensionFolder: string) {
-    const exts = this.getInstalledExtensions();
+  async deleteExtensions(extType: 'Extensions' | 'Themes' | 'Both', extensionFolder: string) {
+    const exts = this.getInstalledExtensions(extType);
     if (exts.length === 0) {
       return Promise.resolve();
     }
@@ -123,6 +131,18 @@ export class PluginService {
       return { codeLastFolder: 'Frameworks', codeCliPath: 'Resources/app/bin/code' };
     }
     return { codeLastFolder: '', codeCliPath: '' };
+  }
+
+  private isTheme(ext: vscode.Extension<any>) {
+    if (ext.packageJSON.categories && ext.packageJSON.categories.length > 0) {
+      for (let i = 0; i < ext.packageJSON.categories.length; i++) {
+        const cat = ext.packageJSON.categories[i].toLowerCase();
+        if (cat === 'themes') {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }
 
