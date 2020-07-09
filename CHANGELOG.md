@@ -4,6 +4,12 @@ All notable changes to the "vscode-ext-import-export" extension will be document
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## Release Notes
 
-- Initial release
+#### 0.0.5 - Initial Release
+
+#### 0.0.6 - Distinguished themes from extensions
+
+#### 0.0.7 - Updated for latest VSCode (1.46)
+
+#### 0.0.8 - Fixed filepath issue
