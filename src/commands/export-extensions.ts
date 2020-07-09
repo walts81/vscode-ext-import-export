@@ -1,11 +1,12 @@
 import { ExtensionContext } from 'vscode';
-import { ExtensionTypeChoice } from '../models';
-import { vscodeHelpers, pluginService } from '../services';
 import * as fs from 'fs-extra';
+import { ExtensionTypeChoice } from '../models';
+import { vscodeHelpers, pluginService, Environment, getSafePath } from '../services';
 
-const writeFile = (path: string, json: string, word: string) => {
+const writeFile = (env: Environment, path: string, json: string, word: string) => {
   return new Promise((resolve, reject) => {
-    fs.writeFile(path, json, err => {
+    const pathToUse = getSafePath(env, path);
+    fs.writeFile(pathToUse, json, err => {
       if (!!err) {
         vscodeHelpers.showErrorMessage(`An error occurred exporting ${word} to JSON`).then(() => reject(err));
       } else {
@@ -17,9 +18,9 @@ const writeFile = (path: string, json: string, word: string) => {
 
 export default async (context: ExtensionContext) => {
   const choices: ExtensionTypeChoice[] = [
-      { order: 1, title: 'Extensions', validOption: true },
-      { order: 2, title: 'Themes', validOption: true },
-      { order: 3, title: 'Both', validOption: true },
+    { order: 1, title: 'Extensions', validOption: true },
+    { order: 2, title: 'Themes', validOption: true },
+    { order: 3, title: 'Both', validOption: true },
   ];
   const answer = await vscodeHelpers.showInformationMessage('Which extensions do you want to export?', ...choices);
   if (answer.validOption !== true) {
@@ -31,10 +32,16 @@ export default async (context: ExtensionContext) => {
   }
   const exts = pluginService.getInstalledExtensions(answer.title as any);
   if (exts.length > 0) {
-    const word = answer.title === 'Themes' ? 'ALL installed themes' : answer.title === 'Extensions' ? 'installed extensions' : 'ALL installed extensions';
+    const word =
+      answer.title === 'Themes'
+        ? 'ALL installed themes'
+        : answer.title === 'Extensions'
+        ? 'installed extensions'
+        : 'ALL installed extensions';
     vscodeHelpers.showInformationMessage(`Exporting ${word} to JSON`);
+    const env = new Environment(context);
     const json = JSON.stringify({ plugins: exts });
-    await writeFile(uri.path, json, word);
+    await writeFile(env, uri.path, json, word);
   } else {
     const word = answer.title === 'Themes' ? 'themes' : 'extensions';
     await vscodeHelpers.showInformationMessage(`No ${word} found`);

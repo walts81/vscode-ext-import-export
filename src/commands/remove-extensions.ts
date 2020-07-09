@@ -12,13 +12,21 @@ export default async (context: ExtensionContext) => {
   if (answer1.validOption !== true) {
     return;
   }
-  const word = answer1.title === 'Themes' ? 'ALL installed themes' : answer1.title === 'Extensions' ? 'installed extensions' : 'ALL installed extensions';
+  const word =
+    answer1.title === 'Themes'
+      ? 'ALL installed themes'
+      : answer1.title === 'Extensions'
+      ? 'installed extensions'
+      : 'ALL installed extensions';
   const answer2 = await vscodeHelpers.showInformationMessage(`Are you sure you want to remove ${word}?`, 'Yes', 'No');
   if (answer2 === 'Yes') {
     vscodeHelpers.showInformationMessage(`Removing ${word}...`);
     const env = new Environment(context);
     await pluginService.deleteExtensions(answer1.title, env.extensionFolder);
-    const answer = await vscodeHelpers.showInformationMessage(`Finished removing ${word}. Please reload VS Code.`, 'Reload');
+    const answer = await vscodeHelpers.showInformationMessage(
+      `Finished removing ${word}. Please reload VS Code.`,
+      'Reload'
+    );
     if (answer === 'Reload') {
       vscodeHelpers.reloadWindow();
     }
